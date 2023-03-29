@@ -4,6 +4,7 @@ Common modules
 """
 
 import ast
+import collections
 import contextlib
 import json
 import math
@@ -396,7 +397,7 @@ class DetectMultiBackend(nn.Module):
             with open(w, 'rb') as f, trt.Runtime(logger) as runtime:
                 model = runtime.deserialize_cuda_engine(f.read())
             context = model.create_execution_context()
-            bindings = OrderedDict()
+            bindings = collections.OrderedDict()
             output_names = []
             fp16 = False  # default updated below
             dynamic = False
@@ -414,7 +415,7 @@ class DetectMultiBackend(nn.Module):
                 shape = tuple(context.get_binding_shape(i))
                 im = torch.from_numpy(np.empty(shape, dtype=dtype)).to(device)
                 bindings[name] = Binding(name, dtype, shape, im, int(im.data_ptr()))
-            binding_addrs = OrderedDict((n, d.ptr) for n, d in bindings.items())
+            binding_addrs = collections.OrderedDict((n, d.ptr) for n, d in bindings.items())
             batch_size = bindings['images'].shape[0]  # if dynamic, this is instead max batch size
         elif coreml:  # CoreML
             LOGGER.info(f'Loading {w} for CoreML inference...')
